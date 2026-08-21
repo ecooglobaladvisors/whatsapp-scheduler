@@ -2,6 +2,7 @@ node_modules/
 auth/
 .env
 service-account.json
+ecoo-feedback-86fecd843f7a.json
 pairing.log
 scheduler.log
 *.tar.gz
