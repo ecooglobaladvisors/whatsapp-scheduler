@@ -35,11 +35,12 @@ jobs:
           restore-keys: |
             whatsapp-auth-
 
-      - name: Seed session from bootstrap secret
+      - name: Seed session from bootstrap branch
         if: github.event.inputs.seed == 'true'
         run: |
           mkdir -p auth
-          echo "${{ secrets.WHATSAPP_AUTH_BOOTSTRAP }}" | base64 -d | tar xz -C auth
+          git fetch origin bootstrap-auth
+          git archive origin/bootstrap-auth | tar -x -C auth
 
       - run: npm ci
 
