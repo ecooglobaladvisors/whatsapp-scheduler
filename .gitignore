@@ -1,0 +1,7 @@
+node_modules/
+auth/
+.env
+service-account.json
+pairing.log
+scheduler.log
+*.tar.gz

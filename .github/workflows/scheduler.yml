@@ -1,0 +1,61 @@
+name: WhatsApp Scheduler
+
+on:
+  workflow_dispatch:
+    inputs:
+      seed:
+        description: 'Seed the WhatsApp session from the bootstrap secret (first run only)'
+        type: boolean
+        default: false
+  # schedule:
+  #   - cron: '7,37 * * * *'   # every 30 min, offset from :00/:30 - enable once verified safe to go live
+
+concurrency:
+  group: whatsapp-scheduler
+  cancel-in-progress: false
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Restore WhatsApp session
+        id: restore
+        uses: actions/cache/restore@v4
+        with:
+          path: auth
+          key: whatsapp-auth-${{ github.run_number }}
+          restore-keys: |
+            whatsapp-auth-
+
+      - name: Seed session from bootstrap secret
+        if: github.event.inputs.seed == 'true'
+        run: |
+          mkdir -p auth
+          echo "${{ secrets.WHATSAPP_AUTH_BOOTSTRAP }}" | base64 -d | tar xz -C auth
+
+      - run: npm ci
+
+      - name: Write service account key
+        run: echo "${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}" | base64 -d > service-account.json
+
+      - name: Poll and send due messages
+        env:
+          SHEET_ID: 1TU72tDrIMX7D_dKZlghktA4YKFKIk0HJYl0E6XxewKo
+          SHEET_TAB: Schedules
+          GOOGLE_KEY_PATH: ./service-account.json
+        run: node poll-once.js
+
+      - name: Save WhatsApp session
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: auth
+          key: whatsapp-auth-${{ github.run_number }}
