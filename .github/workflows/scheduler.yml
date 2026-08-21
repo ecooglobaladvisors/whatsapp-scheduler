@@ -7,8 +7,8 @@ on:
         description: 'Seed the WhatsApp session from the bootstrap secret (first run only)'
         type: boolean
         default: false
-  # schedule:
-  #   - cron: '7,37 * * * *'   # every 30 min, offset from :00/:30 - enable once verified safe to go live
+  schedule:
+    - cron: '2,7,12,17,22,27,32,37,42,47,52,57 * * * *'   # every 5 min, offset from :00
 
 concurrency:
   group: whatsapp-scheduler
